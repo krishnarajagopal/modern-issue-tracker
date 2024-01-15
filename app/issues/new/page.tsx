@@ -6,15 +6,16 @@ import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import{zodResolver} from "@hookform/resolvers/zod"
+import { createIssueSchema } from "@/app/validationSchema";
+import { z } from "zod";
 
-interface IssueForm {
-  title: string;
-  description: string;
-}
+type IssueForm = z.infer<typeof createIssueSchema>
+
 
 const NewIssuePage = () => {
   const router = useRouter();
-  const { register, control, handleSubmit } = useForm<IssueForm>();
+  const { register, control, handleSubmit, formState: { errors } } = useForm<IssueForm>({resolver:zodResolver(createIssueSchema)});
   const [error, setError] = useState("");
   return (
 <div className="max-w-xl">
@@ -34,6 +35,7 @@ const NewIssuePage = () => {
       <TextField.Root>
         <TextField.Input placeholder='Title' {...register("title")} />
       </TextField.Root>
+      {errors.title && <Callout.Root color="red"><CalloutText>{errors.title.message}</CalloutText></Callout.Root>}
       <Controller
         name='description'
         control={control}
@@ -41,6 +43,7 @@ const NewIssuePage = () => {
           <SimpleMDE placeholder='Description' {...field} />
         )}
       />
+      {errors.description && <Callout.Root color="red"><CalloutText>{errors.description.message}</CalloutText></Callout.Root>}
 
       <Button>Submit New Issue</Button>
     </form>
